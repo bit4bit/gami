@@ -2,11 +2,11 @@
 package event
 
 type VarSet struct {
-	Privilege []string
-	Channel string `AMI:"Channel"`
+	Privilege    []string
+	Channel      string `AMI:"Channel"`
 	VariableName string `AMI:"Variable"`
-	Value string `AMI:"Value"`
-	UniqueID string `AMI:"Uniqueid"`
+	Value        string `AMI:"Value"`
+	UniqueID     string `AMI:"Uniqueid"`
 }
 
 func init() {

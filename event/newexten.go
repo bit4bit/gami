@@ -2,17 +2,16 @@
 package event
 
 type Newexten struct {
-	Privilege []string
-	Channel string `AMI:"Channel"`
-	Extension string `AMI:"Extension"`
-	Context string `AMI:"Context"`
-	Priority string `AMI:"Priority"`
-	Application string `AMI:"Application"`
+	Privilege       []string
+	Channel         string `AMI:"Channel"`
+	Extension       string `AMI:"Extension"`
+	Context         string `AMI:"Context"`
+	Priority        string `AMI:"Priority"`
+	Application     string `AMI:"Application"`
 	ApplicationData string `AMI:"Appdata"`
-	UniqueID string `AMI:"Uniqueid"`
+	UniqueID        string `AMI:"Uniqueid"`
 }
 
 func init() {
 	eventTrap["Newexten"] = Newexten{}
 }
-	

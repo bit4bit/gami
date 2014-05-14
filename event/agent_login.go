@@ -3,9 +3,9 @@ package event
 
 type AgentLogin struct {
 	Privilege []string
-	Agent string `AMI:"Agent"`
-	UniqueID string `AMI:"Uniqueid"`
-	Channel string `AMI:"Channel"`
+	Agent     string `AMI:"Agent"`
+	UniqueID  string `AMI:"Uniqueid"`
+	Channel   string `AMI:"Channel"`
 }
 
 func init() {

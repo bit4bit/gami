@@ -2,16 +2,16 @@
 package event
 
 type Newchannel struct {
-	Privilege []string
-	Channel string `AMI:"Channel"`
-	ChannelState string `AMI:"Channelstate"`
+	Privilege        []string
+	Channel          string `AMI:"Channel"`
+	ChannelState     string `AMI:"Channelstate"`
 	ChannelStateDesc string `AMI:"Channelstatedesc"`
-	CallerIDNum string `AMI:"Calleridnum"`
-	CallerIDName string `AMI:"Calleridname"`
-	AccountCode string `AMI:"Accountcode"`
-	UniqueID string `AMI:"Uniqueid"`
-	Context string `AMI:"Context"`
-	Extension string `AMI:"Exten"`
+	CallerIDNum      string `AMI:"Calleridnum"`
+	CallerIDName     string `AMI:"Calleridname"`
+	AccountCode      string `AMI:"Accountcode"`
+	UniqueID         string `AMI:"Uniqueid"`
+	Context          string `AMI:"Context"`
+	Extension        string `AMI:"Exten"`
 }
 
 func init() {

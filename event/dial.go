@@ -2,16 +2,16 @@
 package event
 
 type Dial struct {
-	Privilege []string
-	SubEvent string `AMI:"Subevent"`
-	Channel string `AMI:"Channel"`
-	Destination string `AMI:"Destination"`
-	CallerIDNum string `AMI:"Calleridnum"`
+	Privilege    []string
+	SubEvent     string `AMI:"Subevent"`
+	Channel      string `AMI:"Channel"`
+	Destination  string `AMI:"Destination"`
+	CallerIDNum  string `AMI:"Calleridnum"`
 	CallerIDName string `AMI:"Calleridname"`
-	UniqueID string `AMI:"UniqueID"`
+	UniqueID     string `AMI:"UniqueID"`
 	DestUniqueID string `AMI:"Destuniqueid"`
-	DialString string `AMI:"Dialstring"`
-	DialStatus string `AMI:"Dialstatus"`
+	DialString   string `AMI:"Dialstring"`
+	DialStatus   string `AMI:"Dialstatus"`
 }
 
 func init() {

@@ -2,10 +2,9 @@
 //This Build Type of Event received
 package event
 
-
 import (
-	"github.com/bit4bit/GAMI"
 	"fmt"
+	"github.com/bit4bit/GAMI"
 	"reflect"
 	"strconv"
 )
@@ -17,7 +16,7 @@ var eventTrap = make(map[string]interface{})
 //if not return AMIEvent
 func New(event *gami.AMIEvent) interface{} {
 	if intf, ok := eventTrap[event.Id]; ok {
-		return  build(event, &intf)
+		return build(event, &intf)
 	}
 	return *event
 }
@@ -33,16 +32,16 @@ func build(event *gami.AMIEvent, klass *interface{}) interface{} {
 
 		if tfield.Name == "Privilege" {
 			field.Set(reflect.ValueOf(event.Privilege))
-			continue;
+			continue
 		}
 		switch field.Kind() {
 		case reflect.String:
 			field.SetString(event.Params[tfield.Tag.Get("AMI")])
 		case reflect.Int64:
-			vint,  _ := strconv.Atoi(event.Params[tfield.Tag.Get("AMI")])
+			vint, _ := strconv.Atoi(event.Params[tfield.Tag.Get("AMI")])
 			field.SetInt(int64(vint))
 		default:
-			fmt.Print(ix, tfield.Tag.Get("AMI"), ":", field, "\n")			
+			fmt.Print(ix, tfield.Tag.Get("AMI"), ":", field, "\n")
 		}
 
 	}
