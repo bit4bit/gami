@@ -26,7 +26,7 @@ func main() {
 			select {
 			//wait events and process
 			case ev := <-gami.Events:
-				fmt.Printf("Event Detect: %v", ev)
+				fmt.Printf("Event Detect: %v", *ev)
 			}
 		}
 	}()
@@ -36,10 +36,10 @@ func main() {
 	}
 	
 	
-	if rs, err := gami.Action("Ping", nil); err != nil {
+	if rs, err = gami.Action("Ping", nil); err != nil {
 		fmt.Print(rs)
 	}
-	if rs, err := gami.Action("Events", map[string]string{"EventMask":"on"}); err != nil {
+	if rs, err = gami.Action("Events", map[string]string{"EventMask":"on"}); err != nil {
 		fmt.Print(err)
 	}
 	

@@ -4,7 +4,6 @@ package gami
 
 import (
 	"errors"
-	"fmt"
 	"net/textproto"
 	"strings"
 )
@@ -16,9 +15,9 @@ var errNotAMI error = errors.New("Server not AMI interface")
 type AMIClient struct {
 	conn *textproto.Conn
 
-	response chan AMIResponse
+	response chan *AMIResponse
 
-	Events chan AMIEvent
+	Events chan *AMIEvent
 }
 
 type AMIResponse struct {
@@ -47,22 +46,23 @@ func (client *AMIClient) Login(username, password string) error {
 }
 
 //Send a single action
-func (client *AMIClient) Action(action string, params map[string]string) (AMIResponse, error) {
+func (client *AMIClient) Action(action string, params map[string]string) (*AMIResponse, error) {
 
-	fmt.Print("AMIClient::Action: ", action, "\n")
 
 	if err := client.conn.PrintfLine("Action: %s", strings.TrimSpace(action)); err != nil {
-		fmt.Printf("ERRROR:%v", err)
+		return nil, err
 
 	}
 	for k, v := range params {
-		client.conn.PrintfLine("%s: %s", k, strings.TrimSpace(v))
+		if err := client.conn.PrintfLine("%s: %s", k, strings.TrimSpace(v)); err != nil {
+			return nil, err
+		}
 	}
-	client.conn.PrintfLine("")
+	if err := client.conn.PrintfLine(""); err != nil {
+		return nil, err
+	}
 
-	fmt.Print("AMIClient::Action::END\n")
-	response := <-client.response
-	return response, nil
+	return <-client.response, nil
 }
 
 //Process socket waiting events and responses
@@ -75,12 +75,11 @@ func (client *AMIClient) run() {
 			data, _ := client.conn.ReadMIMEHeader()
 
 			if ev, err := newEvent(&data); err == nil {
-				client.Events <- *ev
+				client.Events <- ev
 
 			}
 			if response, err := newResponse(&data); err == nil {
-				fmt.Printf("\tDATA:%v\n", *response)
-				client.response <- *response
+				client.response <- response
 			}
 		}
 	}()
@@ -131,7 +130,7 @@ func Dial(address string) (*AMIClient, error) {
 		return nil, errNotAMI
 	}
 
-	client := &AMIClient{conn, make(chan AMIResponse), make(chan AMIEvent, 100)}
+	client := &AMIClient{conn, make(chan *AMIResponse), make(chan *AMIEvent, 100)}
 	client.run()
 	return client, nil
 }
