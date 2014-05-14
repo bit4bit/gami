@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/textproto"
 	"strings"
+	"fmt"
 )
 
 var errInvalidLogin error = errors.New("InvalidLogin AMI Interface")
@@ -38,10 +39,14 @@ type AMIEvent struct {
 
 func (client *AMIClient) Login(username, password string) error {
 
-	if _, err := client.Action("Login", map[string]string{"Username": username, "Secret": password}); err != nil {
+	 response, err := client.Action("Login", map[string]string{"Username": username, "Secret": password}); 
+	if err != nil {
 		return err
 	}
 
+	if (*response).Status == "Error" {
+		return errors.New((*response).Params["Message"])
+	}
 	return nil
 }
 
@@ -62,7 +67,8 @@ func (client *AMIClient) Action(action string, params map[string]string) (*AMIRe
 		return nil, err
 	}
 
-	return <-client.response, nil
+	response := <-client.response
+	return response, nil
 }
 
 //Process socket waiting events and responses
