@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/textproto"
 	"strings"
-	"fmt"
 )
 
 var errInvalidLogin error = errors.New("InvalidLogin AMI Interface")
