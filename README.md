@@ -1,4 +1,4 @@
-gami
+GAMI
 ====
 
 GO - Asterisk AMI Interface
@@ -11,7 +11,7 @@ Example connecting to Asterisk and Send Action
 ```go
 package main
 import (
-	"github.com/bit4bit/gami"
+	"github.com/bit4bit/GAMI"
 )
 
 func main() {
