@@ -12,6 +12,7 @@ Example connecting to Asterisk and Send Action
 package main
 import (
 	"github.com/bit4bit/GAMI"
+	"github.com/bit4bit/GAMI/event"
 )
 
 func main() {
@@ -27,6 +28,8 @@ func main() {
 			//wait events and process
 			case ev := <-gami.Events:
 				fmt.Printf("Event Detect: %v", *ev)
+				//if want type of events
+				fmt.Print("EventType:", event.New(ev))
 			}
 		}
 	}()
@@ -46,3 +49,25 @@ func main() {
 	gami.Close()
 }
 ```
+
+
+
+CURRENT EVENT TYPES
+====
+
+The events use documentation and struct from *PAMI*.
+
+EVENT ID | HAVE TEST |
+-- | --
+*Newchannel* | NO
+*Newexten* | NO
+*Newstate* | NO
+*Dial* | NO
+*Event* | NO
+*ExtensionStatus* | NO
+*Hangup* | NO
+*PeerStatus* | NO
+*VarSet* | NO
+*AgentLogin* | NO
+*Agents* | NO
+
