@@ -1,11 +1,12 @@
-//Implementa servico para la lectura de eventos de Asterisk *AMI*
+//GAMI
+//Library for interacting with Asterisk AMI
 package gami
 
 import (
-	"net/textproto"
-	"strings"
 	"errors"
 	"fmt"
+	"net/textproto"
+	"strings"
 )
 
 var errInvalidLogin error = errors.New("InvalidLogin AMI Interface")
@@ -14,11 +15,9 @@ var errNotAMI error = errors.New("Server not AMI interface")
 
 type AMIClient struct {
 	conn *textproto.Conn
-	
+
 	response chan AMIResponse
-	
-	//Se encolan los eventos 
-	//para ser procesados por el cliente de la API
+
 	Events chan AMIEvent
 }
 
@@ -27,49 +26,49 @@ type AMIResponse struct {
 	Params map[string]string
 }
 
+//Representation of Event readed
 type AMIEvent struct {
+	//Identification of event Event: xxxx
 	Id string
+
 	Privilege []string
+
+	//Rest of arguments received
 	Params map[string]string
 }
 
+func (client *AMIClient) Login(username, password string) error {
 
-func (client *AMIClient) Login(username, password string) error  {
-	
-	if _, err := client.Action("Login", map[string]string{"Username": username, "Secret": password}) ; err != nil {
+	if _, err := client.Action("Login", map[string]string{"Username": username, "Secret": password}); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-//
-//@todo con la Action:Logoff se cierra conexion y quedan bloqueados los
+//Send a single action
 func (client *AMIClient) Action(action string, params map[string]string) (AMIResponse, error) {
 
 	fmt.Print("AMIClient::Action: ", action, "\n")
-	
+
 	if err := client.conn.PrintfLine("Action: %s", strings.TrimSpace(action)); err != nil {
 		fmt.Printf("ERRROR:%v", err)
 
 	}
-	for k,v := range params {
+	for k, v := range params {
 		client.conn.PrintfLine("%s: %s", k, strings.TrimSpace(v))
 	}
 	client.conn.PrintfLine("")
-	
+
 	fmt.Print("AMIClient::Action::END\n")
 	response := <-client.response
 	return response, nil
 }
 
+//Process socket waiting events and responses
+func (client *AMIClient) run() {
 
-//Va enviando eventos obtenidos
-//!importante debe ser llamada despues de *Login*
-//para obtener el primer evento
-func (client *AMIClient) run()  {
-
-	go func(){
+	go func() {
 
 		for {
 
@@ -107,12 +106,12 @@ func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	return response, nil
 }
 
-func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error)  {
+func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	if data.Get("Event") == "" {
 		return nil, errors.New("Not Event")
 	}
 	ev := &AMIEvent{data.Get("Event"), strings.Split(data.Get("Privilege"), ","), make(map[string]string)}
-	for k,v := range *data {
+	for k, v := range *data {
 		if k == "Event" || k == "Privilege" {
 			continue
 		}
@@ -126,9 +125,9 @@ func Dial(address string) (*AMIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	label, _ := conn.ReadLine()
-	if strings.Contains(label, "Asterisk Call Manager")  != true {
+	if strings.Contains(label, "Asterisk Call Manager") != true {
 		return nil, errNotAMI
 	}
 
@@ -136,4 +135,3 @@ func Dial(address string) (*AMIClient, error) {
 	client.run()
 	return client, nil
 }
-
