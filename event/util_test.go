@@ -1,8 +1,8 @@
 package event
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 //Util para hacer pruebas de eventos

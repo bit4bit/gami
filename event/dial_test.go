@@ -1,29 +1,27 @@
 package event
 
 import (
-	"testing"
 	"github.com/bit4bit/GAMI"
+	"testing"
 )
 
-
-
 func TestDialEvent(t *testing.T) {
-	fixture := map[string]string {
-		"Subevent" : "SubEvent",
-		"Channel" : "Channel",
-		"Destination" : "Destination",
-		"Calleridnum" : "CallerIDNum",
-		"Calleridname" : "CallerIDName",
-		"Uniqueid" : "UniqueID",
-		"Destuniqueid" : "DestUniqueID",
-		"Dialstring" : "DialString",
-		"Dialstatus" : "DialStatus",
+	fixture := map[string]string{
+		"Subevent":     "SubEvent",
+		"Channel":      "Channel",
+		"Destination":  "Destination",
+		"Calleridnum":  "CallerIDNum",
+		"Calleridname": "CallerIDName",
+		"Uniqueid":     "UniqueID",
+		"Destuniqueid": "DestUniqueID",
+		"Dialstring":   "DialString",
+		"Dialstatus":   "DialStatus",
 	}
-	
+
 	ev := gami.AMIEvent{
-		Id: "Dial",
+		Id:        "Dial",
 		Privilege: []string{"all"},
-		Params: fixture,
+		Params:    fixture,
 	}
 
 	evtype := New(&ev)
@@ -32,6 +30,5 @@ func TestDialEvent(t *testing.T) {
 		t.Fail()
 	}
 	testEvent(t, fixture, evtype)
-	
-}
 
+}
