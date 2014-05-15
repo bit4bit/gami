@@ -57,17 +57,17 @@ CURRENT EVENT TYPES
 
 The events use documentation and struct from *PAMI*.
 
-EVENT ID          | HAVE TEST  
+EVENT ID          | TYPE TEST  
 ----------------  | ---------- 
 *Newchannel*      | NO 
 *Newexten*        | NO 
-*Newstate*        | NO 
-*Dial*            | NO 
+*Newstate*        | YES 
+*Dial*            | YES 
 *Event*           | NO 
 *ExtensionStatus* | NO 
-*Hangup*          | NO 
+*Hangup*          | YES 
 *PeerStatus*      | NO 
-*VarSet*          | NO 
+*VarSet*          | YES 
 *AgentLogin*      | NO 
 *Agents*          | NO
 

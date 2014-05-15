@@ -8,7 +8,7 @@ type Dial struct {
 	Destination  string `AMI:"Destination"`
 	CallerIDNum  string `AMI:"Calleridnum"`
 	CallerIDName string `AMI:"Calleridname"`
-	UniqueID     string `AMI:"UniqueID"`
+	UniqueID     string `AMI:"Uniqueid"`
 	DestUniqueID string `AMI:"Destuniqueid"`
 	DialString   string `AMI:"Dialstring"`
 	DialStatus   string `AMI:"Dialstatus"`
