@@ -5,8 +5,8 @@ type ExtensionStatus struct {
 	Privilege []string
 	Extension string `AMI:"Exten"`
 	Context   string `AMI:"Context"`
-	Hint      string `AMI:"String"`
-	Status    string `AMI:"String"`
+	Hint      string `AMI:"Hint"`
+	Status    string `AMI:"Status"`
 }
 
 func init() {
