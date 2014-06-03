@@ -70,3 +70,4 @@ EVENT ID          | TYPE TEST
 *AgentLogin*      | YES
 *Agents*          | YES
 *AgentLogoff*     | YES
+*AgentConnect*    | YES
