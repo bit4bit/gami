@@ -63,7 +63,7 @@ EVENT ID          | TYPE TEST
 *Newexten*        | YES
 *Newstate*        | YES 
 *Dial*            | YES 
-*ExtensionStatus* | NO 
+*ExtensionStatus* | YES 
 *Hangup*          | YES 
 *PeerStatus*      | NO 
 *VarSet*          | YES 
