@@ -4,7 +4,7 @@ package event
 
 import (
 	"fmt"
-	"github.com/bit4bit/GAMI"
+	"github.com/bit4bit/gami"
 	"reflect"
 	"strconv"
 )
