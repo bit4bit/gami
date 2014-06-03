@@ -7,9 +7,9 @@ type Agents struct {
 	Agent            string `AMI:"Agent"`
 	Name             string `AMI:"Name"`
 	Channel          string `AMI:"Channel"`
-	LoggedInTime     string `AMI:"Channel"`
-	TalkingTo        string `AMI:"TalkingTo"`
-	TalkingToChannel string `AMI:"TalkingToChannel"`
+	LoggedInTime     string `AMI:"Loggedintime"`
+	TalkingTo        string `AMI:"Talkingto"`
+	TalkingToChannel string `AMI:"Talkingtochannel"`
 }
 
 func init() {
