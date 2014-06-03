@@ -1,7 +1,7 @@
 package event
 
 import (
-	"github.com/bit4bit/GAMI"
+	"github.com/bit4bit/gami"
 	"testing"
 )
 
