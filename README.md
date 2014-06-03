@@ -69,5 +69,5 @@ EVENT ID          | TYPE TEST
 *PeerStatus*      | NO 
 *VarSet*          | YES 
 *AgentLogin*      | NO 
-*Agents*          | NO
+*Agents*          | YES
 
