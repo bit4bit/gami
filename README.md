@@ -65,7 +65,7 @@ EVENT ID          | TYPE TEST
 *Dial*            | YES 
 *ExtensionStatus* | YES 
 *Hangup*          | YES 
-*PeerStatus*      | NO 
+*PeerStatus*      | YES
 *VarSet*          | YES 
 *AgentLogin*      | YES
 *Agents*          | YES
