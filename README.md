@@ -59,7 +59,7 @@ The events use documentation and struct from *PAMI*.
 
 EVENT ID          | TYPE TEST  
 ----------------  | ---------- 
-*Newchannel*      | NO 
+*Newchannel*      | YES
 *Newexten*        | YES
 *Newstate*        | YES 
 *Dial*            | YES 
