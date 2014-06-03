@@ -69,4 +69,4 @@ EVENT ID          | TYPE TEST
 *VarSet*          | YES 
 *AgentLogin*      | YES
 *Agents*          | YES
-
+*AgentLogoff*     | YES
