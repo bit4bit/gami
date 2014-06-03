@@ -60,10 +60,9 @@ The events use documentation and struct from *PAMI*.
 EVENT ID          | TYPE TEST  
 ----------------  | ---------- 
 *Newchannel*      | NO 
-*Newexten*        | NO 
+*Newexten*        | YES
 *Newstate*        | YES 
 *Dial*            | YES 
-*Event*           | NO 
 *ExtensionStatus* | NO 
 *Hangup*          | YES 
 *PeerStatus*      | NO 
