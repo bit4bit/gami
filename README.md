@@ -68,6 +68,6 @@ EVENT ID          | TYPE TEST
 *Hangup*          | YES 
 *PeerStatus*      | NO 
 *VarSet*          | YES 
-*AgentLogin*      | NO 
+*AgentLogin*      | YES
 *Agents*          | YES
 
