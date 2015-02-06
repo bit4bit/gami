@@ -42,18 +42,25 @@ Basic Usage
 	}()
 
 	if err := ami.Login("admin", "root"); err != nil {
-		fmt.Print(err)
+		log.Fatal(err)
 	}
 
 
-	if rs, err = ami.Action("Ping", nil); err != nil {
-		fmt.Print(rs)
+	if rs, err = ami.Action("Ping", nil); err == nil {
+		log.Fatal(rs)
 	}
+
+	//or with can do async
+	pingResp, pingErr := ami.AsyncAction("Ping", gami.Params{"ActionID": "miping"})
+	if pingErr != nil {
+		log.Fatal(pingErr)
+	}
+
 	if rs, err = ami.Action("Events", ami.Params{"EventMask":"on"}); err != nil {
 		fmt.Print(err)
 	}
 
-
+	log.Println("future ping:", <-pingResp)
 
 
 */
@@ -67,6 +74,8 @@ import (
 	"strings"
 	"syscall"
 )
+
+const responseChanGamiID = "gamigeneral"
 
 var ErrNotEvent error = errors.New("Not Event")
 var ErrInvalidLogin error = errors.New("InvalidLogin AMI Interface")
@@ -85,7 +94,7 @@ type AMIClient struct {
 	// network wait for a new connection
 	waitNewConnection chan struct{}
 
-	response chan *AMIResponse
+	response map[string]chan *AMIResponse
 
 	// Events for client parse
 	Events chan *AMIEvent
@@ -99,6 +108,7 @@ type AMIClient struct {
 
 // AMIResponse
 type AMIResponse struct {
+	ID     string
 	Status string
 	Params map[string]string
 }
@@ -152,11 +162,19 @@ func (client *AMIClient) Reconnect() error {
 	return nil
 }
 
-// Action send with params
-func (client *AMIClient) Action(action string, params Params) (*AMIResponse, error) {
-
+// AsyncAction return chan for wait response of action with parameter *ActionID* this can be helpful for
+// massive actions,
+func (client *AMIClient) AsyncAction(action string, params Params) (<-chan *AMIResponse, error) {
 	if err := client.conn.PrintfLine("Action: %s", strings.TrimSpace(action)); err != nil {
 		return nil, err
+	}
+
+	if _, ok := params["ActionID"]; ok {
+		params["ActionID"] = responseChanGamiID
+	}
+
+	if _, ok := client.response[params["ActionID"]]; !ok {
+		client.response[params["ActionID"]] = make(chan *AMIResponse, 1)
 	}
 
 	for k, v := range params {
@@ -169,7 +187,17 @@ func (client *AMIClient) Action(action string, params Params) (*AMIResponse, err
 		return nil, err
 	}
 
-	response := <-client.response
+	return client.response[params["ActionID"]], nil
+}
+
+// Action send with params
+func (client *AMIClient) Action(action string, params Params) (*AMIResponse, error) {
+	resp, err := client.AsyncAction(action, params)
+	if err != nil {
+		return nil, err
+	}
+	response := <-resp
+
 	return response, nil
 }
 
@@ -205,7 +233,7 @@ func (client *AMIClient) Run() {
 			}
 
 			if response, err := newResponse(&data); err == nil {
-				client.response <- response
+				client.response[response.ID] <- response
 			}
 
 		}
@@ -223,13 +251,14 @@ func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	if data.Get("Response") == "" {
 		return nil, errors.New("Not Response")
 	}
-	response := &AMIResponse{"", make(map[string]string)}
+	response := &AMIResponse{"", "", make(map[string]string)}
 	for k, v := range *data {
 		if k == "Response" {
 			continue
 		}
 		response.Params[k] = v[0]
 	}
+	response.ID = data.Get("Actionid")
 	response.Status = data.Get("Response")
 	return response, nil
 }
@@ -273,11 +302,10 @@ func Dial(address string) (*AMIClient, error) {
 		amiUser:           "",
 		amiPass:           "",
 		waitNewConnection: make(chan struct{}),
-		response:          make(chan *AMIResponse),
+		response:          make(map[string]chan *AMIResponse),
 		Events:            make(chan *AMIEvent, 100),
 		Error:             make(chan error, 1),
 		NetError:          make(chan error, 1),
 	}
-
 	return client, nil
 }
