@@ -3,50 +3,67 @@ GAMI
 
 GO - Asterisk AMI Interface
 
-The library allow connect to Asterisk AMI and send Actions and
-parse Events.
+communicate with the  Asterisk AMI, Actions and Events.
 
-Example connecting to Asterisk and Send Action
+Example connecting to Asterisk and Send Action get Events.
 
 ```go
 package main
 import (
-	"github.com/bit4bit/GAMI"
-	"github.com/bit4bit/GAMI/event"
+	"log"
+	"github.com/bit4bit/gami"
+	"github.com/bit4bit/gami/event"
 )
 
 func main() {
-	gami, err := gami.Dial("127.0.0.1:5038")
+	ami, err := gami.Dial("127.0.0.1:5038")
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 	
+	//install manager
 	go func() {
 		for {
 			select {
+			//handle network errors
+			case err := <-ami.NetError:
+				log.Println("Network Error:", err)
+				//try new connection every second
+				for {
+					<-time.After(time.Second)
+					if err := ami.Reconnect(); err == nil {
+						//call start actions
+						if _, err := ami.Action("Events", gami.Params{"EventMask": "on"}); err != nil {
+							break
+						}
+					}
+				}
+				
+			case err := <-ami.Error:
+				log.Println("error:", err)
 			//wait events and process
-			case ev := <-gami.Events:
-				fmt.Printf("Event Detect: %v", *ev)
+			case ev := <-ami.Events:
+				log.Println("Event Detect: %v", *ev)
 				//if want type of events
-				fmt.Print("EventType:", event.New(ev))
+				log.Println("EventType:", event.New(ev))
 			}
 		}
 	}()
 	
-	if err := gami.Login("admin", "root"); err != nil {
+	if err := ami.Login("admin", "root"); err != nil {
 		fmt.Print(err)
 	}
 	
 	
-	if rs, err = gami.Action("Ping", nil); err != nil {
+	if rs, err = ami.Action("Ping", nil); err != nil {
 		fmt.Print(rs)
 	}
-	if rs, err = gami.Action("Events", map[string]string{"EventMask":"on"}); err != nil {
+	if rs, err = ami.Action("Events", ami.Params{"EventMask":"on"}); err != nil {
 		fmt.Print(err)
 	}
 	
-	gami.Close()
+	ami.Close()
 }
 ```
 

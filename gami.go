@@ -4,26 +4,29 @@ package gami
 
 import (
 	"errors"
+	"io"
+	"net"
 	"net/textproto"
 	"strings"
-	"net"
-	"time"
+	"syscall"
 )
 
-var errInvalidLogin error = errors.New("InvalidLogin AMI Interface")
-var errBadResponse error = errors.New("Bad Response for action")
-var errNotAMI error = errors.New("Server not AMI interface")
+var ErrNotEvent error = errors.New("Not Event")
+var ErrInvalidLogin error = errors.New("InvalidLogin AMI Interface")
+var ErrNotAMI error = errors.New("Server not AMI interface")
+
+type Params map[string]string
 
 type AMIClient struct {
-	conn *textproto.Conn
+	conn     *textproto.Conn
 	conn_raw *net.Conn
 
 	address string
 	amiUser string
 	amiPass string
-	
-	//Timeout on read
-	ReadTimeout time.Duration
+
+	//network wait for a new connection
+	waitNewConnection chan struct{}
 
 	response chan *AMIResponse
 
@@ -32,6 +35,9 @@ type AMIClient struct {
 
 	//Raise error
 	Error chan error
+
+	//Network error
+	NetError chan error
 }
 
 type AMIResponse struct {
@@ -50,9 +56,9 @@ type AMIEvent struct {
 	Params map[string]string
 }
 
+//authenticate to AMI
 func (client *AMIClient) Login(username, password string) error {
-
-	 response, err := client.Action("Login", map[string]string{"Username": username, "Secret": password}); 
+	response, err := client.Action("Login", Params{"Username": username, "Secret": password})
 	if err != nil {
 		return err
 	}
@@ -60,7 +66,7 @@ func (client *AMIClient) Login(username, password string) error {
 	if (*response).Status == "Error" {
 		return errors.New((*response).Params["Message"])
 	}
-	
+
 	client.amiUser = username
 	client.amiPass = password
 	return nil
@@ -69,7 +75,6 @@ func (client *AMIClient) Login(username, password string) error {
 //Reconnect the session, autologin
 func (client *AMIClient) Reconnect() error {
 	client.conn.Close()
-
 	reconnect, err := Dial(client.address)
 	if err != nil {
 		return err
@@ -80,12 +85,12 @@ func (client *AMIClient) Reconnect() error {
 
 	client.conn = reconnect.conn
 	client.conn_raw = reconnect.conn_raw
+	client.waitNewConnection <- struct{}{}
 	return nil
 }
 
 //Send a single action
-func (client *AMIClient) Action(action string, params map[string]string) (*AMIResponse, error) {
-
+func (client *AMIClient) Action(action string, params Params) (*AMIResponse, error) {
 
 	if err := client.conn.PrintfLine("Action: %s", strings.TrimSpace(action)); err != nil {
 		return nil, err
@@ -111,33 +116,48 @@ func (client *AMIClient) run() {
 	go func() {
 
 		for {
-			if client.ReadTimeout > 0 {
-				//close the connection if not read something
-				(*client.conn_raw).SetReadDeadline(time.Now().Add(client.ReadTimeout))			
-			}
 
 			data, err := client.conn.ReadMIMEHeader()
 
 			if err != nil {
-				client.Error <- err
+				switch err {
+				case syscall.ECONNABORTED:
+					fallthrough
+				case syscall.ECONNRESET:
+					fallthrough
+				case syscall.ECONNREFUSED:
+					fallthrough
+				case io.EOF:
+					client.NetError <- err
+					<-client.waitNewConnection
+				default:
+					client.Error <- err
+				}
 				continue
 			}
 
-			if ev, err := newEvent(&data); err == nil {
+			if ev, err := newEvent(&data); err != nil {
+				if err != ErrNotEvent {
+					client.Error <- err
+				}
+			} else {
 				client.Events <- ev
 			}
+
 			if response, err := newResponse(&data); err == nil {
 				client.response <- response
 			}
+
 		}
 	}()
 }
 
 func (client *AMIClient) Close() {
 	client.Action("Logoff", nil)
-	client.conn.Close()
+	(*client.conn_raw).Close()
 }
 
+//get a response from action
 func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	if data.Get("Response") == "" {
 		return nil, errors.New("Not Response")
@@ -153,9 +173,10 @@ func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	return response, nil
 }
 
+//build event
 func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	if data.Get("Event") == "" {
-		return nil, errors.New("Not Event")
+		return nil, ErrNotEvent
 	}
 	ev := &AMIEvent{data.Get("Event"), strings.Split(data.Get("Privilege"), ","), make(map[string]string)}
 	for k, v := range *data {
@@ -167,9 +188,10 @@ func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	return ev, nil
 }
 
+//Create a new connection to AMI
 func Dial(address string) (*AMIClient, error) {
 	conn_raw, err := net.Dial("tcp", address)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -178,21 +200,23 @@ func Dial(address string) (*AMIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if strings.Contains(label, "Asterisk Call Manager") != true {
-		return nil, errNotAMI
+		return nil, ErrNotAMI
 	}
 
 	client := &AMIClient{
-		conn: conn, 
-		conn_raw: &conn_raw, 
-		address: address,
-		amiUser: "",
-		amiPass: "",
-		response: make(chan *AMIResponse),
-		ReadTimeout: 0,
-		Events: make(chan *AMIEvent, 100),
-		Error: make(chan error)}
+		conn:              conn,
+		conn_raw:          &conn_raw,
+		address:           address,
+		amiUser:           "",
+		amiPass:           "",
+		waitNewConnection: make(chan struct{}),
+		response:          make(chan *AMIResponse),
+		Events:            make(chan *AMIEvent, 100),
+		Error:             make(chan error, 1),
+		NetError:          make(chan error, 1),
+	}
 	client.run()
 	return client, nil
 }
