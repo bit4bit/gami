@@ -1,5 +1,4 @@
-//GAMI
-//Library for interacting with Asterisk AMI
+// Package gami provites primitives for interacting with Asterisk AMI
 package gami
 
 import (
@@ -25,21 +24,22 @@ type AMIClient struct {
 	amiUser string
 	amiPass string
 
-	//network wait for a new connection
+	// network wait for a new connection
 	waitNewConnection chan struct{}
 
 	response chan *AMIResponse
 
-	//Events for client parse
+	// Events for client parse
 	Events chan *AMIEvent
 
-	//Raise error
+	// Error Raise on logic
 	Error chan error
 
-	//Network error
+	//NetError a network error
 	NetError chan error
 }
 
+// AMIResponse
 type AMIResponse struct {
 	Status string
 	Params map[string]string
@@ -56,7 +56,7 @@ type AMIEvent struct {
 	Params map[string]string
 }
 
-//authenticate to AMI
+// Login authenticate to AMI
 func (client *AMIClient) Login(username, password string) error {
 	response, err := client.Action("Login", Params{"Username": username, "Secret": password})
 	if err != nil {
@@ -72,7 +72,7 @@ func (client *AMIClient) Login(username, password string) error {
 	return nil
 }
 
-//Reconnect the session, autologin
+// Reconnect the session, autologin
 func (client *AMIClient) Reconnect() error {
 	client.conn.Close()
 	reconnect, err := Dial(client.address)
@@ -89,7 +89,7 @@ func (client *AMIClient) Reconnect() error {
 	return nil
 }
 
-//Send a single action
+// Action send with params
 func (client *AMIClient) Action(action string, params Params) (*AMIResponse, error) {
 
 	if err := client.conn.PrintfLine("Action: %s", strings.TrimSpace(action)); err != nil {
@@ -110,7 +110,7 @@ func (client *AMIClient) Action(action string, params Params) (*AMIResponse, err
 	return response, nil
 }
 
-//Process socket waiting events and responses
+// run Process socket waiting events and responses
 func (client *AMIClient) run() {
 
 	go func() {
@@ -152,12 +152,13 @@ func (client *AMIClient) run() {
 	}()
 }
 
+// Close the connection to AMI
 func (client *AMIClient) Close() {
 	client.Action("Logoff", nil)
 	(*client.conn_raw).Close()
 }
 
-//get a response from action
+//newResponse build a response for action
 func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	if data.Get("Response") == "" {
 		return nil, errors.New("Not Response")
@@ -173,7 +174,7 @@ func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	return response, nil
 }
 
-//build event
+//newEvent build event
 func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	if data.Get("Event") == "" {
 		return nil, ErrNotEvent
@@ -188,7 +189,7 @@ func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	return ev, nil
 }
 
-//Create a new connection to AMI
+// Dial create a new connection to AMI
 func Dial(address string) (*AMIClient, error) {
 	conn_raw, err := net.Dial("tcp", address)
 
