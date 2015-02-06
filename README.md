@@ -18,8 +18,7 @@ import (
 func main() {
 	ami, err := gami.Dial("127.0.0.1:5038")
 	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 	
 	//install manager
@@ -52,16 +51,25 @@ func main() {
 	}()
 	
 	if err := ami.Login("admin", "root"); err != nil {
-		fmt.Print(err)
+		log.Fatal(err)
 	}
 	
 	
 	if rs, err = ami.Action("Ping", nil); err != nil {
-		fmt.Print(rs)
+		log.Fatal(rs)
 	}
+	
+	//async actions
+	rsPing, rsErr := ami.AsyncAction("Ping", gami.Params{"ActionID": "pingo"})
+	if rsErr != nil {
+		log.Fatal(rsErr)
+	}
+						
 	if rs, err = ami.Action("Events", ami.Params{"EventMask":"on"}); err != nil {
-		fmt.Print(err)
+		log.Fatal(err)
 	}
+	
+	log.Println("ping:", <-rsPing)
 	
 	ami.Close()
 }
