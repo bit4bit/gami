@@ -82,6 +82,8 @@ CURRENT EVENT TYPES
 
 The events use documentation and struct from *PAMI*.
 
+use **bit4bit/gami/event.New()** for get this struct from raw event
+
 EVENT ID          | TYPE TEST  
 ----------------  | ---------- 
 *Newchannel*      | YES
