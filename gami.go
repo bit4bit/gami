@@ -9,6 +9,7 @@ Basic Usage
 		fmt.Print(err)
 		os.Exit(1)
 	}
+	ami.Run()
 	defer ami.Close()
 
 	//install manager
@@ -129,20 +130,25 @@ func (client *AMIClient) Login(username, password string) error {
 	return nil
 }
 
-// Reconnect the session, autologin
+// Reconnect the session, autologin if a new network error it put on client.NetError
 func (client *AMIClient) Reconnect() error {
 	client.conn.Close()
 	reconnect, err := Dial(client.address)
+
 	if err != nil {
-		return err
-	}
-	if err := reconnect.Login(client.amiUser, client.amiPass); err != nil {
+		client.NetError <- err
 		return err
 	}
 
+	//new connection
 	client.conn = reconnect.conn
 	client.conn_raw = reconnect.conn_raw
 	client.waitNewConnection <- struct{}{}
+
+	if err := client.Login(client.amiUser, client.amiPass); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -168,12 +174,9 @@ func (client *AMIClient) Action(action string, params Params) (*AMIResponse, err
 }
 
 // run Process socket waiting events and responses
-func (client *AMIClient) run() {
-
+func (client *AMIClient) Run() {
 	go func() {
-
 		for {
-
 			data, err := client.conn.ReadMIMEHeader()
 
 			if err != nil {
@@ -275,6 +278,6 @@ func Dial(address string) (*AMIClient, error) {
 		Error:             make(chan error, 1),
 		NetError:          make(chan error, 1),
 	}
-	client.run()
+
 	return client, nil
 }
