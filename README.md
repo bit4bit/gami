@@ -98,3 +98,6 @@ EVENT ID          | TYPE TEST
 *Agents*          | YES
 *AgentLogoff*     | YES
 *AgentConnect*    | YES
+*RTPReceiverStats* | YES
+*RTPSenderStats* | YES
+
