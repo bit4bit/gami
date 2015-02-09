@@ -1,6 +1,7 @@
-//Event triggered when exchanging rtp stats.
+// Package event for AMI
 package event
 
+// RTPSenderStats triggered when exchanging rtp stats.
 type RTPSenderStats struct {
 	Privilege   []string
 	SSRC        string `AMI:"Ssrc"`

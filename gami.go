@@ -77,15 +77,18 @@ import (
 
 const responseChanGamiID = "gamigeneral"
 
-var ErrNotEvent error = errors.New("Not Event")
-var ErrInvalidLogin error = errors.New("InvalidLogin AMI Interface")
-var ErrNotAMI error = errors.New("Server not AMI interface")
+var errNotEvent = errors.New("Not Event")
 
+// Raise when not response expected protocol AMI
+var ErrNotAMI = errors.New("Server not AMI interface")
+
+// Params for the actions
 type Params map[string]string
 
+// AMIClient a connection to AMI server
 type AMIClient struct {
-	conn     *textproto.Conn
-	conn_raw *net.Conn
+	conn    *textproto.Conn
+	connRaw *net.Conn
 
 	address string
 	amiUser string
@@ -106,17 +109,17 @@ type AMIClient struct {
 	NetError chan error
 }
 
-// AMIResponse
+// AMIResponse from action
 type AMIResponse struct {
 	ID     string
 	Status string
 	Params map[string]string
 }
 
-//Representation of Event readed
+// AMIEvent it's a representation of Event readed
 type AMIEvent struct {
 	//Identification of event Event: xxxx
-	Id string
+	ID string
 
 	Privilege []string
 
@@ -152,7 +155,7 @@ func (client *AMIClient) Reconnect() error {
 
 	//new connection
 	client.conn = reconnect.conn
-	client.conn_raw = reconnect.conn_raw
+	client.connRaw = reconnect.connRaw
 	client.waitNewConnection <- struct{}{}
 
 	if err := client.Login(client.amiUser, client.amiPass); err != nil {
@@ -201,7 +204,7 @@ func (client *AMIClient) Action(action string, params Params) (*AMIResponse, err
 	return response, nil
 }
 
-// run Process socket waiting events and responses
+// Run process socket waiting events and responses
 func (client *AMIClient) Run() {
 	go func() {
 		for {
@@ -225,7 +228,7 @@ func (client *AMIClient) Run() {
 			}
 
 			if ev, err := newEvent(&data); err != nil {
-				if err != ErrNotEvent {
+				if err != errNotEvent {
 					client.Error <- err
 				}
 			} else {
@@ -243,7 +246,7 @@ func (client *AMIClient) Run() {
 // Close the connection to AMI
 func (client *AMIClient) Close() {
 	client.Action("Logoff", nil)
-	(*client.conn_raw).Close()
+	(*client.connRaw).Close()
 }
 
 //newResponse build a response for action
@@ -266,7 +269,7 @@ func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 //newEvent build event
 func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	if data.Get("Event") == "" {
-		return nil, ErrNotEvent
+		return nil, errNotEvent
 	}
 	ev := &AMIEvent{data.Get("Event"), strings.Split(data.Get("Privilege"), ","), make(map[string]string)}
 	for k, v := range *data {
@@ -280,12 +283,12 @@ func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 
 // Dial create a new connection to AMI
 func Dial(address string) (*AMIClient, error) {
-	conn_raw, err := net.Dial("tcp", address)
+	connRaw, err := net.Dial("tcp", address)
 
 	if err != nil {
 		return nil, err
 	}
-	conn := textproto.NewConn(conn_raw)
+	conn := textproto.NewConn(connRaw)
 	label, err := conn.ReadLine()
 	if err != nil {
 		return nil, err
@@ -297,7 +300,7 @@ func Dial(address string) (*AMIClient, error) {
 
 	client := &AMIClient{
 		conn:              conn,
-		conn_raw:          &conn_raw,
+		connRaw:           &connRaw,
 		address:           address,
 		amiUser:           "",
 		amiPass:           "",

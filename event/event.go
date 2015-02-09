@@ -1,4 +1,4 @@
-//Event decoder
+//Package event decoder
 //This Build Type of Event received
 package event
 
@@ -9,11 +9,10 @@ import (
 	"strconv"
 )
 
-//used internal for trap events and cast
+// eventTrap used internal for trap events and cast
 var eventTrap = make(map[string]interface{})
 
-//Build a new event Type
-//if not return AMIEvent
+//New build a new event Type if not return the AMIEvent
 func New(event *gami.AMIEvent) interface{} {
 	if intf, ok := eventTrap[event.Id]; ok {
 		return build(event, &intf)

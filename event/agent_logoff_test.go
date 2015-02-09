@@ -7,21 +7,21 @@ import (
 
 func TestAgentLogoff(t *testing.T) {
 	fixture := map[string]string{
-		"Agent": "Agent",
-		"Uniqueid": "UniqueID",
+		"Agent":     "Agent",
+		"Uniqueid":  "UniqueID",
 		"Logintime": "LoginTime",
 	}
 
 	ev := gami.AMIEvent{
-		Id: "AgentLogoff",
+		Id:        "AgentLogoff",
 		Privilege: []string{"all"},
-		Params: fixture,
+		Params:    fixture,
 	}
-	
+
 	evtype := New(&ev)
 	if _, ok := evtype.(AgentLogoff); !ok {
 		t.Fatal("AgentLogoff type assertion")
 	}
-	
+
 	testEvent(t, fixture, evtype)
 }

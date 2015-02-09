@@ -1,6 +1,7 @@
-//Event triggered when a dial is executed.
+// Package event for AMI
 package event
 
+// Dial triggered when a dial is executed.
 type Dial struct {
 	Privilege    []string
 	SubEvent     string `AMI:"Subevent"`

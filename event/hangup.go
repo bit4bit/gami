@@ -1,6 +1,7 @@
-//Triggered when a hangup is detected.
+// Package event for AMI
 package event
 
+// Hangup triggered when a hangup is detected.
 type Hangup struct {
 	Privilege    []string
 	Channel      string `AMI:"Channel"`

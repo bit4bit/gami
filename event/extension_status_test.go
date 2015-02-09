@@ -7,16 +7,16 @@ import (
 
 func TestExtensionStatus(t *testing.T) {
 	fixture := map[string]string{
-		"Exten": "Extension",
+		"Exten":   "Extension",
 		"Context": "Context",
-		"Hint": "Hint",
-		"Status": "Status",
+		"Hint":    "Hint",
+		"Status":  "Status",
 	}
 
 	ev := gami.AMIEvent{
-		Id: "ExtensionStatus",
+		Id:        "ExtensionStatus",
 		Privilege: []string{"all"},
-		Params: fixture,
+		Params:    fixture,
 	}
 
 	evtype := New(&ev)

@@ -1,6 +1,7 @@
-//Event triggered when a new extension is accessed.
+// Package event for AMI
 package event
 
+// Newexten triggered when a new extension is accessed.
 type Newexten struct {
 	Privilege       []string
 	Channel         string `AMI:"Channel"`

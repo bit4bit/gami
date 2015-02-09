@@ -1,6 +1,7 @@
-//Event triggered when a new channel is created.
+// Package event for AMI
 package event
 
+// Newchannel triggered when a new channel is created.
 type Newchannel struct {
 	Privilege        []string
 	Channel          string `AMI:"Channel"`

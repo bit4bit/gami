@@ -7,21 +7,21 @@ import (
 
 func TestNewchannel(t *testing.T) {
 	fixture := map[string]string{
-		"Channel": "Channel",
-		"Channelstate": "ChannelState",
+		"Channel":          "Channel",
+		"Channelstate":     "ChannelState",
 		"Channelstatedesc": "ChannelStateDesc",
-		"Calleridnum": "CallerIDNum",
-		"Calleridname": "CallerIDName",
-		"Accountcode": "AccountCode",
-		"Uniqueid": "UniqueID",
-		"Context": "Context",
-		"Exten": "Extension",
+		"Calleridnum":      "CallerIDNum",
+		"Calleridname":     "CallerIDName",
+		"Accountcode":      "AccountCode",
+		"Uniqueid":         "UniqueID",
+		"Context":          "Context",
+		"Exten":            "Extension",
 	}
 
 	ev := gami.AMIEvent{
-		Id: "Newchannel",
+		Id:        "Newchannel",
 		Privilege: []string{"all"},
-		Params: fixture,
+		Params:    fixture,
 	}
 
 	evtype := New(&ev)

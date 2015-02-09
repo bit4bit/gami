@@ -1,6 +1,7 @@
-//trigger when a peers change status
+// Package event for AMI
 package event
 
+// PeerStatus trigger when a peers change status
 type PeerStatus struct {
 	Privilege   []string
 	ChannelType string `AMI:"Channeltype"`

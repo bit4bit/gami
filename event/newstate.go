@@ -1,6 +1,7 @@
-//Event triggered when a channel changes its status
+// Package event for AMI
 package event
 
+// Newstate triggered when a channel changes its status.
 type Newstate struct {
 	Privilege         []string
 	Channel           string `AMI:"Channel"`

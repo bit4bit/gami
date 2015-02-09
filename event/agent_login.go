@@ -1,6 +1,7 @@
-//Event trigger when agent logs in
+// Package event for AMI
 package event
 
+// AgentLogin trigger when agent logs in
 type AgentLogin struct {
 	Privilege []string
 	Agent     string `AMI:"Agent"`

@@ -1,6 +1,7 @@
-//Triggered when an extension changes its status.
+// Package event for AMI
 package event
 
+// ExtensionStatus triggered when an extension changes its status.
 type ExtensionStatus struct {
 	Privilege []string
 	Extension string `AMI:"Exten"`

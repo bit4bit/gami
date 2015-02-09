@@ -7,19 +7,19 @@ import (
 
 func TestAgentsEvent(t *testing.T) {
 	fixture := map[string]string{
-		"Status": "Status",
-		"Agent": "Agent",
-		"Name": "Name",
-		"Channel": "Channel",
-		"Loggedintime": "LoggedInTime",
-		"Talkingto": "TalkingTo",
+		"Status":           "Status",
+		"Agent":            "Agent",
+		"Name":             "Name",
+		"Channel":          "Channel",
+		"Loggedintime":     "LoggedInTime",
+		"Talkingto":        "TalkingTo",
 		"Talkingtochannel": "TalkingToChannel",
 	}
 
 	ev := gami.AMIEvent{
-		Id: "Agents",
+		Id:        "Agents",
 		Privilege: []string{"all"},
-		Params: fixture,
+		Params:    fixture,
 	}
 
 	evtype := New(&ev)

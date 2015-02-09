@@ -5,23 +5,22 @@ import (
 	"testing"
 )
 
-
 func TestAgentConnect(t *testing.T) {
 	fixture := map[string]string{
-		"Holdtime": "HoldTime",
+		"Holdtime":       "HoldTime",
 		"Bridgedchannel": "BridgedChannel",
-		"Ringtime": "RingTime",
-		"Member": "Member",
-		"Membername": "MemberName",
-		"Queue": "Queue",
-		"Uniqueid": "UniqueID",
-		"Channel": "Channel",
+		"Ringtime":       "RingTime",
+		"Member":         "Member",
+		"Membername":     "MemberName",
+		"Queue":          "Queue",
+		"Uniqueid":       "UniqueID",
+		"Channel":        "Channel",
 	}
 
 	ev := gami.AMIEvent{
-		Id: "AgentConnect",
-		Privilege: []string {"all"},
-		Params: fixture,
+		Id:        "AgentConnect",
+		Privilege: []string{"all"},
+		Params:    fixture,
 	}
 
 	evtype := New(&ev)

@@ -1,6 +1,7 @@
-//Event triggered when a variable is set via agi or dialplan.
+// Package event for AMI
 package event
 
+// VarSet triggered when a variable is set via agi or dialplan.
 type VarSet struct {
 	Privilege    []string
 	Channel      string `AMI:"Channel"`

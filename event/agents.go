@@ -1,6 +1,7 @@
-//Event Trigger for agents
+// Package event for AMI
 package event
 
+//Agents trigger for agents
 type Agents struct {
 	Privilege        []string
 	Status           string `AMI:"Status"`

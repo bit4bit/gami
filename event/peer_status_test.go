@@ -6,18 +6,18 @@ import (
 )
 
 func TestPeerStatus(t *testing.T) {
-	fixture := map[string]string {
+	fixture := map[string]string{
 		"Channeltype": "ChannelType",
-		"Peer": "Peer",
-		"Peerstatus": "PeerStatus",
+		"Peer":        "Peer",
+		"Peerstatus":  "PeerStatus",
 	}
 
 	ev := gami.AMIEvent{
-		Id: "PeerStatus",
+		Id:        "PeerStatus",
 		Privilege: []string{"all"},
-		Params: fixture,
+		Params:    fixture,
 	}
-	
+
 	evtype := New(&ev)
 	if _, ok := evtype.(PeerStatus); !ok {
 		t.Fatal("PeerStatus type assertion")
