@@ -13,7 +13,7 @@ func TestPeerStatus(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "PeerStatus",
+		ID:        "PeerStatus",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

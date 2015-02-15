@@ -15,7 +15,7 @@ func TestHangupEvent(t *testing.T) {
 		"Cause-Text":   "CauseText",
 	}
 	ev := gami.AMIEvent{
-		Id:        "Hangup",
+		ID:        "Hangup",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

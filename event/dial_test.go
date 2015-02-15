@@ -19,7 +19,7 @@ func TestDialEvent(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "Dial",
+		ID:        "Dial",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

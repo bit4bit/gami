@@ -14,7 +14,7 @@ var eventTrap = make(map[string]interface{})
 
 //New build a new event Type if not return the AMIEvent
 func New(event *gami.AMIEvent) interface{} {
-	if intf, ok := eventTrap[event.Id]; ok {
+	if intf, ok := eventTrap[event.ID]; ok {
 		return build(event, &intf)
 	}
 	return *event

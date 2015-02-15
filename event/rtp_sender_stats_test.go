@@ -16,7 +16,7 @@ func TestRTPSenderStats(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "RTPSenderStats",
+		ID:        "RTPSenderStats",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

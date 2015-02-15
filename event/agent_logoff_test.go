@@ -13,7 +13,7 @@ func TestAgentLogoff(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "AgentLogoff",
+		ID:        "AgentLogoff",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

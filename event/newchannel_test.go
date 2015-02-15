@@ -19,7 +19,7 @@ func TestNewchannel(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "Newchannel",
+		ID:        "Newchannel",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

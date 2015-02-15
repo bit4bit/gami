@@ -14,7 +14,7 @@ func TestVarSetEvent(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "VarSet",
+		ID:        "VarSet",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

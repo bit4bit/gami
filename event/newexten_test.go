@@ -15,7 +15,7 @@ func TestNewexten(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "Newexten",
+		ID:        "Newexten",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}

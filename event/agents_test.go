@@ -17,7 +17,7 @@ func TestAgentsEvent(t *testing.T) {
 	}
 
 	ev := gami.AMIEvent{
-		Id:        "Agents",
+		ID:        "Agents",
 		Privilege: []string{"all"},
 		Params:    fixture,
 	}
