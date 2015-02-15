@@ -100,4 +100,5 @@ EVENT ID          | TYPE TEST
 *AgentConnect*    | YES
 *RTPReceiverStats* | YES
 *RTPSenderStats* | YES
+*Bridge* | YES
 
