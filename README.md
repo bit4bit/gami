@@ -93,6 +93,7 @@ EVENT ID          | TYPE TEST
 *ExtensionStatus* | YES 
 *Hangup*          | YES 
 *PeerStatus*      | YES
+*PeerEntry*	      | YES
 *VarSet*          | YES 
 *AgentLogin*      | YES
 *Agents*          | YES
@@ -101,4 +102,5 @@ EVENT ID          | TYPE TEST
 *RTPReceiverStats* | YES
 *RTPSenderStats* | YES
 *Bridge* | YES
+
 
