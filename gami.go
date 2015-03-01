@@ -88,7 +88,7 @@ type Params map[string]string
 // AMIClient a connection to AMI server
 type AMIClient struct {
 	conn    *textproto.Conn
-	connRaw *net.Conn
+	connRaw io.ReadWriteCloser
 
 	address string
 	amiUser string
@@ -246,7 +246,7 @@ func (client *AMIClient) Run() {
 // Close the connection to AMI
 func (client *AMIClient) Close() {
 	client.Action("Logoff", nil)
-	(*client.connRaw).Close()
+	(client.connRaw).Close()
 }
 
 //newResponse build a response for action
@@ -300,7 +300,34 @@ func Dial(address string) (*AMIClient, error) {
 
 	client := &AMIClient{
 		conn:              conn,
-		connRaw:           &connRaw,
+		connRaw:           connRaw,
+		address:           address,
+		amiUser:           "",
+		amiPass:           "",
+		waitNewConnection: make(chan struct{}),
+		response:          make(map[string]chan *AMIResponse),
+		Events:            make(chan *AMIEvent, 100),
+		Error:             make(chan error, 1),
+		NetError:          make(chan error, 1),
+	}
+	return client, nil
+}
+
+// NewConn create a new connection to AMI
+func NewConn(connRaw io.ReadWriteCloser, address string) (*AMIClient, error) {
+	conn := textproto.NewConn(connRaw)
+	label, err := conn.ReadLine()
+	if err != nil {
+		return nil, err
+	}
+
+	if strings.Contains(label, "Asterisk Call Manager") != true {
+		return nil, ErrNotAMI
+	}
+
+	client := &AMIClient{
+		conn:              conn,
+		connRaw:           connRaw,
 		address:           address,
 		amiUser:           "",
 		amiPass:           "",
