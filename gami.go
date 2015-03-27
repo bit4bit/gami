@@ -20,15 +20,12 @@ Basic Usage
 			case err := <-ami.NetError:
 				log.Println("Network Error:", err)
 				//try new connection every second
-				for {
-					<-time.After(time.Second)
-					if err := ami.Reconnect(); err == nil {
-						//call start actions
-						if _, err := ami.Action("Events", gami.Params{"EventMask": "on"}); err != nil {
-							break
-						}
-					}
+				<-time.After(time.Second)
+				if err := ami.Reconnect(); err == nil {
+					//call start actions
+					ami.Action("Events", gami.Params{"EventMask": "on"})
 				}
+
 
 			case err := <-ami.Error:
 				log.Println("error:", err)
