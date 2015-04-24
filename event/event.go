@@ -4,9 +4,10 @@ package event
 
 import (
 	"fmt"
-	"github.com/bit4bit/gami"
 	"reflect"
 	"strconv"
+
+	"github.com/bit4bit/gami"
 )
 
 // eventTrap used internal for trap events and cast
