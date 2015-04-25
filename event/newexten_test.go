@@ -1,8 +1,9 @@
 package event
 
 import (
-	"github.com/bit4bit/gami"
 	"testing"
+
+	"github.com/bit4bit/gami"
 )
 
 func TestNewexten(t *testing.T) {

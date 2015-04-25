@@ -64,6 +64,7 @@ Basic Usage
 package gami
 
 import (
+	"crypto/tls"
 	"errors"
 	"io"
 	"net"
@@ -87,9 +88,11 @@ type AMIClient struct {
 	conn    *textproto.Conn
 	connRaw io.ReadWriteCloser
 
-	address string
-	amiUser string
-	amiPass string
+	address     string
+	amiUser     string
+	amiPass     string
+	useTLS      bool
+	unsecureTLS bool
 
 	// network wait for a new connection
 	waitNewConnection chan struct{}
@@ -124,6 +127,14 @@ type AMIEvent struct {
 	Params map[string]string
 }
 
+func UseTLS(c *AMIClient) {
+	c.useTLS = true
+}
+
+func UnsecureTLS(c *AMIClient) {
+	c.unsecureTLS = true
+}
+
 // Login authenticate to AMI
 func (client *AMIClient) Login(username, password string) error {
 	response, err := client.Action("Login", Params{"Username": username, "Secret": password})
@@ -143,16 +154,13 @@ func (client *AMIClient) Login(username, password string) error {
 // Reconnect the session, autologin if a new network error it put on client.NetError
 func (client *AMIClient) Reconnect() error {
 	client.conn.Close()
-	reconnect, err := Dial(client.address)
+	err := client.NewConn()
 
 	if err != nil {
 		client.NetError <- err
 		return err
 	}
 
-	//new connection
-	client.conn = reconnect.conn
-	client.connRaw = reconnect.connRaw
 	client.waitNewConnection <- struct{}{}
 
 	if err := client.Login(client.amiUser, client.amiPass); err != nil {
@@ -279,25 +287,8 @@ func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 }
 
 // Dial create a new connection to AMI
-func Dial(address string) (*AMIClient, error) {
-	connRaw, err := net.Dial("tcp", address)
-
-	if err != nil {
-		return nil, err
-	}
-	conn := textproto.NewConn(connRaw)
-	label, err := conn.ReadLine()
-	if err != nil {
-		return nil, err
-	}
-
-	if strings.Contains(label, "Asterisk Call Manager") != true {
-		return nil, ErrNotAMI
-	}
-
+func Dial(address string, options ...func(*AMIClient)) (*AMIClient, error) {
 	client := &AMIClient{
-		conn:              conn,
-		connRaw:           connRaw,
 		address:           address,
 		amiUser:           "",
 		amiPass:           "",
@@ -306,33 +297,40 @@ func Dial(address string) (*AMIClient, error) {
 		Events:            make(chan *AMIEvent, 100),
 		Error:             make(chan error, 1),
 		NetError:          make(chan error, 1),
+		useTLS:            false,
+		unsecureTLS:       false,
+	}
+	for _, op := range options {
+		op(client)
+	}
+	err := client.NewConn()
+	if err != nil {
+		return nil, err
 	}
 	return client, nil
 }
 
 // NewConn create a new connection to AMI
-func NewConn(connRaw io.ReadWriteCloser, address string) (*AMIClient, error) {
-	conn := textproto.NewConn(connRaw)
-	label, err := conn.ReadLine()
+func (client *AMIClient) NewConn() (err error) {
+	if client.useTLS {
+		client.connRaw, err = tls.Dial("tcp", client.address, &tls.Config{InsecureSkipVerify: client.unsecureTLS})
+	} else {
+		client.connRaw, err = net.Dial("tcp", client.address)
+	}
+
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	client.conn = textproto.NewConn(client.connRaw)
+	label, err := client.conn.ReadLine()
+	if err != nil {
+		return err
 	}
 
 	if strings.Contains(label, "Asterisk Call Manager") != true {
-		return nil, ErrNotAMI
+		return ErrNotAMI
 	}
 
-	client := &AMIClient{
-		conn:              conn,
-		connRaw:           connRaw,
-		address:           address,
-		amiUser:           "",
-		amiPass:           "",
-		waitNewConnection: make(chan struct{}),
-		response:          make(map[string]chan *AMIResponse),
-		Events:            make(chan *AMIEvent, 100),
-		Error:             make(chan error, 1),
-		NetError:          make(chan error, 1),
-	}
-	return client, nil
+	return nil
 }

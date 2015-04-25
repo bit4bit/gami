@@ -71,7 +71,21 @@ func main() {
 }
 ```
 
+###TLS SUPPORT
+In order to use TLS connection to manager interface you could `Dial` with additional parameters
+```go
+//without TLS
+ami, err := gami.Dial("127.0.0.1:5038")
 
+//if certificate is trusted
+ami, err := gami.Dial("127.0.0.1:5039", gami.UseTLS)
+
+//if self signed certificate
+ami, err := gami.Dial("127.0.0.1:5039", gami.UseTLS, gami.UnsecureTLS)
+```
+**WARNING:**
+*Only Asterisk >=1.6 supports TLS connection to AMI and
+it needs additional configuration(follow the [Asterisk AMI configuration](http://www.asteriskdocs.org/en/3rd_Edition/asterisk-book-html-chunk/AMI-configuration.html) documentation)*
 
 CURRENT EVENT TYPES
 ====
@@ -98,5 +112,3 @@ EVENT ID          | TYPE TEST
 *RTPReceiverStats* | YES
 *RTPSenderStats* | YES
 *Bridge* | YES
-
-
