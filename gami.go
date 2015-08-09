@@ -94,6 +94,9 @@ type AMIClient struct {
 	useTLS      bool
 	unsecureTLS bool
 
+	// TLSConfig for secure connections
+	tlsConfig *tls.Config
+
 	// network wait for a new connection
 	waitNewConnection chan struct{}
 
@@ -129,6 +132,13 @@ type AMIEvent struct {
 
 func UseTLS(c *AMIClient) {
 	c.useTLS = true
+}
+
+func UseTLSConfig(config *tls.Config) func(*AMIClient) {
+	return func(c *AMIClient) {
+		c.tlsConfig = config
+		c.useTLS = true
+	}
 }
 
 func UnsecureTLS(c *AMIClient) {
@@ -299,6 +309,7 @@ func Dial(address string, options ...func(*AMIClient)) (*AMIClient, error) {
 		NetError:          make(chan error, 1),
 		useTLS:            false,
 		unsecureTLS:       false,
+		tlsConfig:         new(tls.Config),
 	}
 	for _, op := range options {
 		op(client)
@@ -313,7 +324,8 @@ func Dial(address string, options ...func(*AMIClient)) (*AMIClient, error) {
 // NewConn create a new connection to AMI
 func (client *AMIClient) NewConn() (err error) {
 	if client.useTLS {
-		client.connRaw, err = tls.Dial("tcp", client.address, &tls.Config{InsecureSkipVerify: client.unsecureTLS})
+		client.tlsConfig.InsecureSkipVerify = client.unsecureTLS
+		client.connRaw, err = tls.Dial("tcp", client.address, client.tlsConfig)
 	} else {
 		client.connRaw, err = net.Dial("tcp", client.address)
 	}

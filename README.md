@@ -82,6 +82,9 @@ ami, err := gami.Dial("127.0.0.1:5039", gami.UseTLS)
 
 //if self signed certificate
 ami, err := gami.Dial("127.0.0.1:5039", gami.UseTLS, gami.UnsecureTLS)
+
+//if custom tls configuration
+ami, err := gami.Dial("127.0.0.1:5039", gami.UseTLSConfig(&tls.Config{}))
 ```
 **WARNING:**
 *Only Asterisk >=1.6 supports TLS connection to AMI and
