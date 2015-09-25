@@ -72,6 +72,7 @@ import (
 	"net"
 	"net/textproto"
 	"strings"
+	"sync"
 	"syscall"
 )
 
@@ -87,8 +88,9 @@ type Params map[string]string
 
 // AMIClient a connection to AMI server
 type AMIClient struct {
-	conn    *textproto.Conn
-	connRaw io.ReadWriteCloser
+	conn             *textproto.Conn
+	connRaw          io.ReadWriteCloser
+	mutexAsyncAction *sync.RWMutex
 
 	address     string
 	amiUser     string
@@ -186,6 +188,9 @@ func (client *AMIClient) Reconnect() error {
 // massive actions,
 func (client *AMIClient) AsyncAction(action string, params Params) (<-chan *AMIResponse, error) {
 	var output string
+	client.mutexAsyncAction.Lock()
+	defer client.mutexAsyncAction.Unlock()
+
 	output = fmt.Sprintf("Action: %s\r\n", strings.TrimSpace(action))
 	if params == nil {
 		params = Params{}
@@ -249,7 +254,7 @@ func (client *AMIClient) Run() {
 			}
 
 			if response, err := newResponse(&data); err == nil {
-				client.response[response.ID] <- response
+				client.notifyResponse(response)
 			}
 
 		}
@@ -260,6 +265,16 @@ func (client *AMIClient) Run() {
 func (client *AMIClient) Close() {
 	client.Action("Logoff", nil)
 	(client.connRaw).Close()
+}
+
+func (client *AMIClient) notifyResponse(response *AMIResponse) {
+	go func() {
+		client.mutexAsyncAction.RLock()
+		client.response[response.ID] <- response
+		close(client.response[response.ID])
+		delete(client.response, response.ID)
+		client.mutexAsyncAction.RUnlock()
+	}()
 }
 
 //newResponse build a response for action
@@ -300,6 +315,7 @@ func Dial(address string, options ...func(*AMIClient)) (*AMIClient, error) {
 		address:           address,
 		amiUser:           "",
 		amiPass:           "",
+		mutexAsyncAction:  new(sync.RWMutex),
 		waitNewConnection: make(chan struct{}),
 		response:          make(map[string]chan *AMIResponse),
 		Events:            make(chan *AMIEvent, 100),

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"net/textproto"
+	"sync"
 	"testing"
 	"time"
 )
@@ -52,33 +53,35 @@ func TestMultiAsyncActions(t *testing.T) {
 	defaultInstaller(t, ami)
 
 	tests := 10
-	workers := 3
+	workers := 5
 
+	wg := &sync.WaitGroup{}
 	for ti := tests; ti > 0; ti-- {
 		resWorkers := make(chan (<-chan *AMIResponse), workers)
 		for i := 0; i < workers; i++ {
-			chres, err := ami.AsyncAction("Test", nil)
-			if err != nil {
-				t.Error(err)
-			}
-			resWorkers <- chres
+			wg.Add(1)
+			go func() {
+				chres, err := ami.AsyncAction("Test", nil)
+				if err != nil {
+					t.Error(err)
+				}
+				resWorkers <- chres
+				wg.Done()
+			}()
 		}
-		close(resWorkers)
-		done := make(chan bool)
 		go func() {
-			select {
-			case <-time.After(time.Second * 2):
-				t.Error("asyncAction locked")
-			case <-done:
-				done <- true
-				break
-			}
+			wg.Wait()
+			close(resWorkers)
 		}()
-		for res := range resWorkers {
-			<-res
+
+		for resp := range resWorkers {
+			select {
+			case <-time.After(time.Second * 5):
+				t.Fatal("asyncAction locked")
+			case <-resp:
+			}
 		}
-		done <- true
-		<-done
+
 	}
 
 }
