@@ -66,7 +66,9 @@ package gami
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"net/textproto"
 	"strings"
@@ -183,25 +185,22 @@ func (client *AMIClient) Reconnect() error {
 // AsyncAction return chan for wait response of action with parameter *ActionID* this can be helpful for
 // massive actions,
 func (client *AMIClient) AsyncAction(action string, params Params) (<-chan *AMIResponse, error) {
-	if err := client.conn.PrintfLine("Action: %s", strings.TrimSpace(action)); err != nil {
-		return nil, err
+	var output string
+	output = fmt.Sprintf("Action: %s\r\n", strings.TrimSpace(action))
+	if params == nil {
+		params = Params{}
 	}
-
-	if _, ok := params["ActionID"]; ok {
-		params["ActionID"] = responseChanGamiID
+	if _, ok := params["ActionID"]; !ok {
+		params["ActionID"] = responseChanGamiID + "_" + fmt.Sprintf("%d", rand.Intn(1000000))
 	}
 
 	if _, ok := client.response[params["ActionID"]]; !ok {
 		client.response[params["ActionID"]] = make(chan *AMIResponse, 1)
 	}
-
 	for k, v := range params {
-		if err := client.conn.PrintfLine("%s: %s", k, strings.TrimSpace(v)); err != nil {
-			return nil, err
-		}
+		output = output + fmt.Sprintf("%s: %s\r\n", k, strings.TrimSpace(v))
 	}
-
-	if err := client.conn.PrintfLine(""); err != nil {
+	if err := client.conn.PrintfLine("%s", output); err != nil {
 		return nil, err
 	}
 
@@ -224,7 +223,6 @@ func (client *AMIClient) Run() {
 	go func() {
 		for {
 			data, err := client.conn.ReadMIMEHeader()
-
 			if err != nil {
 				switch err {
 				case syscall.ECONNABORTED:
