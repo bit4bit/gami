@@ -6,15 +6,17 @@ import (
 	"math/rand"
 	"net"
 	"net/textproto"
-	"reflect"
 	"testing"
 	"time"
 )
 
+type amiMockAction func(params textproto.MIMEHeader) map[string]string
+
 //amiServer for mocking Asterisk AMI
 type amiServer struct {
-	Addr     string
-	listener net.Listener
+	Addr          string
+	actionsMocked map[string]amiMockAction
+	listener      net.Listener
 }
 
 func TestLogin(t *testing.T) {
@@ -27,6 +29,13 @@ func TestLogin(t *testing.T) {
 	go ami.Run()
 	defer ami.Close()
 	defaultInstaller(t, ami)
+	srv.Mock("Login", func(params textproto.MIMEHeader) map[string]string {
+		println("mock login")
+		return map[string]string{
+			"Response": "OK",
+			"ActionID": params.Get("Actionid"),
+		}
+	})
 	ami.Login("admin", "admin")
 }
 
@@ -96,18 +105,16 @@ func newAmiServer() *amiServer {
 	if err != nil {
 		panic(err)
 	}
-	srv := &amiServer{Addr: listener.Addr().String(), listener: listener}
+	srv := &amiServer{Addr: listener.Addr().String(),
+		listener:      listener,
+		actionsMocked: make(map[string]amiMockAction)}
 	go srv.do(listener)
 	return srv
 }
 
-//MockLogin it's a example for mocking responses
-func (c *amiServer) MockLogin(params textproto.MIMEHeader) map[string]string {
-	println("Llamado login")
-	return map[string]string{
-		"Response": "OK",
-		"ActionID": params.Get("Actionid"),
-	}
+//Mock
+func (c *amiServer) Mock(action string, cb amiMockAction) {
+	c.actionsMocked[action] = cb
 }
 
 func (c *amiServer) do(listener net.Listener) {
@@ -126,7 +133,6 @@ func (c *amiServer) do(listener net.Listener) {
 			}
 		}(tconn)
 
-		rval := reflect.ValueOf(c)
 		go func(conn *textproto.Conn) {
 			defer conn.Close()
 
@@ -138,11 +144,10 @@ func (c *amiServer) do(listener net.Listener) {
 				var output bytes.Buffer
 
 				time.AfterFunc(time.Millisecond*time.Duration(rand.Intn(1000)), func() {
-					fnc := rval.MethodByName("Mock" + header.Get("Action"))
-					if fnc.IsValid() {
-						rvals := fnc.Call([]reflect.Value{reflect.ValueOf(header)})
-						ival := rvals[0].Interface()
-						for k, vals := range ival.(map[string]string) {
+
+					if _, ok := c.actionsMocked[header.Get("Action")]; ok {
+						rvals := c.actionsMocked[header.Get("Action")](header)
+						for k, vals := range rvals {
 							fmt.Fprintf(&output, "%s: %s\r\n", k, vals)
 						}
 						output.WriteString("\r\n")
