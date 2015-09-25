@@ -29,8 +29,9 @@ func TestLogin(t *testing.T) {
 	go ami.Run()
 	defer ami.Close()
 	defaultInstaller(t, ami)
+
+	//example mocking login of asterisk
 	srv.Mock("Login", func(params textproto.MIMEHeader) map[string]string {
-		println("mock login")
 		return map[string]string{
 			"Response": "OK",
 			"ActionID": params.Get("Actionid"),
