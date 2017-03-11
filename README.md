@@ -13,6 +13,7 @@ import (
 	"log"
 	"github.com/bit4bit/gami"
 	"github.com/bit4bit/gami/event"
+	"time"
 )
 
 func main() {
@@ -20,6 +21,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ami.Run()
+	defer ami.Close()
 	
 	//install manager
 	go func() {
@@ -51,8 +54,8 @@ func main() {
 	}
 	
 	
-	if rs, err = ami.Action("Ping", nil); err != nil {
-		log.Fatal(rs)
+	if _, errPing := ami.Action("Ping", nil); errPing != nil {
+		log.Fatal(errPing)
 	}
 	
 	//async actions
@@ -61,13 +64,13 @@ func main() {
 		log.Fatal(rsErr)
 	}
 						
-	if rs, err = ami.Action("Events", ami.Params{"EventMask":"on"}); err != nil {
+	if _, err := ami.Action("Events", gami.Params{"EventMask":"on"}); err != nil {
 		log.Fatal(err)
 	}
 	
 	log.Println("ping:", <-rsPing)
 	
-	ami.Close()
+
 }
 ```
 
