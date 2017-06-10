@@ -68,15 +68,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
+	"time"
 	"net"
 	"net/textproto"
 	"strings"
 	"sync"
 	"syscall"
 )
-
-const responseChanGamiID = "gamigeneral"
 
 var errNotEvent = errors.New("Not Event")
 
@@ -196,7 +194,7 @@ func (client *AMIClient) AsyncAction(action string, params Params) (<-chan *AMIR
 		params = Params{}
 	}
 	if _, ok := params["ActionID"]; !ok {
-		params["ActionID"] = responseChanGamiID + "_" + fmt.Sprintf("%d", rand.Intn(1000000))
+		params["ActionID"] = fmt.Sprintf("%d", time.Now().UnixNano())
 	}
 
 	if _, ok := client.response[params["ActionID"]]; !ok {
@@ -253,6 +251,9 @@ func (client *AMIClient) Run() {
 				client.Events <- ev
 			}
 
+			//only handle valid responses
+			//@todo handle longs response
+			// see  https://marcelog.github.io/articles/php_asterisk_manager_interface_protocol_tutorial_introduction.html
 			if response, err := newResponse(&data); err == nil {
 				client.notifyResponse(response)
 			}
@@ -285,15 +286,17 @@ func newResponse(data *textproto.MIMEHeader) (*AMIResponse, error) {
 	if data.Get("Response") == "" {
 		return nil, errors.New("Not Response")
 	}
-	response := &AMIResponse{"", "", make(map[string]string)}
+	
+	response := &AMIResponse{data.Get("Actionid"),
+		data.Get("Response"),
+		make(map[string]string)}
+
 	for k, v := range *data {
 		if k == "Response" {
 			continue
 		}
 		response.Params[k] = v[0]
 	}
-	response.ID = data.Get("Actionid")
-	response.Status = data.Get("Response")
 	return response, nil
 }
 
@@ -302,7 +305,10 @@ func newEvent(data *textproto.MIMEHeader) (*AMIEvent, error) {
 	if data.Get("Event") == "" {
 		return nil, errNotEvent
 	}
-	ev := &AMIEvent{data.Get("Event"), strings.Split(data.Get("Privilege"), ","), make(map[string]string)}
+	ev := &AMIEvent{data.Get("Event"),
+		strings.Split(data.Get("Privilege"), ","),
+		make(map[string]string)}
+
 	for k, v := range *data {
 		if k == "Event" || k == "Privilege" {
 			continue
