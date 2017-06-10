@@ -1,5 +1,9 @@
+// Copyright 2014 Jovany Leandro G.C <bit4bit@riseup.net>. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file
+
 // Package gami provites primitives for interacting with Asterisk AMI
-/*
+
 
 Basic Usage
 
