@@ -272,8 +272,11 @@ func (client *AMIClient) notifyResponse(response *AMIResponse) {
 		client.mutexAsyncAction.RLock()
 		client.response[response.ID] <- response
 		close(client.response[response.ID])
-		delete(client.response, response.ID)
 		client.mutexAsyncAction.RUnlock()
+
+		client.mutexAsyncAction.Lock()
+		delete(client.response, response.ID)
+		client.mutexAsyncAction.Unlock()
 	}()
 }
 
